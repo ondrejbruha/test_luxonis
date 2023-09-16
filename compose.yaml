@@ -1,0 +1,43 @@
+services:
+  pre-app:
+    image: python
+    depends_on:
+      - postgres
+    working_dir: /app
+    command: sh -c "pip install -r requirements.txt && python3 sreality_spider.py"
+    volumes:
+      - ./:/app
+    environment:
+      HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+  app:
+    depends_on:
+      - postgres
+      - pre-app
+    image: python
+    command: sh -c "pip install -r requirements.txt && python3 app.py"
+    ports:
+      - 127.0.0.1:3000:3000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: postgres
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: postgres
+      POSTGRES_DATABASE: postgres
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
